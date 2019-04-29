@@ -32,9 +32,9 @@ import com.vega2k.service.UserService;
  */
 @RunWith(SpringRunner.class)
 //@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
-@WebMvcTest(UserController.class)
+@WebMvcTest(UserRestController.class)
 //@AutoConfigureMockMvc
-public class UserControllerTest {
+public class UserRestControllerTest {
 
 	@Autowired
 	MockMvc mockMvc;
@@ -55,14 +55,14 @@ public class UserControllerTest {
 	
 	@Test @Ignore
 	public void createUser_JSON() throws Exception {
-		String userJson = "{\"username\":\"vega2k\",\"password\":\"123\"}";
+		String userJson = "{\"name\":\"vega2k\",\"email\":\"aa@a.com\"}";
 		mockMvc.perform(post("/users/create")
 				.contentType(MediaType.APPLICATION_JSON_UTF8)
 				.accept(MediaType.APPLICATION_JSON_UTF8)
 				.content(userJson)) //여기까지가 요청, andExpect 부터가 응답을 받는 부분
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.username", is(equalTo("vega2k"))))
-			.andExpect(jsonPath("$.password", is(equalTo("123"))))
+			.andExpect(jsonPath("$.name", is(equalTo("vega2k"))))
+			.andExpect(jsonPath("$.email", is(equalTo("aa@a.com"))))
 			.andDo(print());		       
 	}
 	
@@ -70,14 +70,14 @@ public class UserControllerTest {
 	//요청은 json으로 응답은 xml로
 	@Test
 	public void createUser_XML() throws Exception {
-		String userJson = "{\"username\":\"vega2k\",\"password\":\"123\"}";
+		String userJson = "{\"name\":\"vega2k\",\"email\":\"aa@a.com\"}";
 		mockMvc.perform(post("/users/create")
 				.contentType(MediaType.APPLICATION_JSON_UTF8)
 				.accept(MediaType.APPLICATION_XML)
 				.content(userJson))
 			.andExpect(status().isOk())
-			.andExpect(xpath("/User/username").string("vega2k"))
-			.andExpect(xpath("/User/password").string("123"))
+			.andExpect(xpath("/User/name").string("vega2k"))
+			.andExpect(xpath("/User/email").string("aa@a.com"))
 			.andDo(print());
 		       
 	}

@@ -1,39 +1,69 @@
 package com.vega2k.controller;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
 
 import com.vega2k.entity.User;
-import com.vega2k.service.UserService;
+import com.vega2k.repository.UserRepository;
 
-//import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
-/*
- * Spring MVC 설정을 개발자가 하지 않아도 내부에 
- * spring-boot-autoconfigure.jar 파일의 META-INF 디렉토리 내에
- * spring.factories의 
- * org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration
- * WebMvc와 관련된 자동 설정 클래스가 적용되기 때문이다.
- * 
- * spring.factories 내에서 f3으로 이동이 않되므로 
- * import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration
- * 를 한 후에 f3 눌러서 source를 확인한다.
- */
-@RestController
+@Controller
 public class UserController {
-	
 	@Autowired
-	private UserService sampleService;
+	UserRepository userRepository;
 	
-	@GetMapping("/hello")
-	public String hello() {
-		return "hello " + sampleService.getName() ;
+	@GetMapping("/index")
+	public String index(Model model) {
+		model.addAttribute("users", userRepository.findAll());
+		return "index";
 	}
 	
-	@PostMapping("/users/create")
-	public User create(@RequestBody User user) {
-		return user;
-	}
+	@GetMapping("/signup")
+    public String showSignUpForm(User user) {
+        return "add-user";
+    }
+    
+    @PostMapping("/adduser")
+    public String addUser(@Valid User user, BindingResult result, Model model) {
+        if (result.hasErrors()) {
+            return "add-user";
+        }
+        System.out.println("=====> " + user);
+        userRepository.save(user);
+        model.addAttribute("users", userRepository.findAll());
+        return "index";
+    }
+    
+    @GetMapping("/edit/{id}")
+    public String showUpdateForm(@PathVariable("id") long id, Model model) {
+        User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Invalid user Id:" + id));
+        model.addAttribute("user", user);
+        return "update-user";
+    }
+    
+    @PostMapping("/update/{id}")
+    public String updateUser(@PathVariable("id") long id, @Valid User user, BindingResult result, Model model) {
+        if (result.hasErrors()) {
+            user.setId(id);
+            return "update-user";
+        }
+        
+        userRepository.save(user);
+        model.addAttribute("users", userRepository.findAll());
+        return "index";
+    }
+    
+    @GetMapping("/delete/{id}")
+    public String deleteUser(@PathVariable("id") long id, Model model) {
+        User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Invalid user Id:" + id));
+        userRepository.delete(user);
+        model.addAttribute("users", userRepository.findAll());
+        return "index";
+    }
 }
